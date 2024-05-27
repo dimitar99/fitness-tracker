@@ -1,0 +1,52 @@
+.btn{
+    background-color: darkslateblue;
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+    padding: 12px;
+    border-radius: 8px;
+    border: 0px;
+    /* margin-bottom: 16px; */
+    /* Suavizar transicion */
+    transition: background-color 0.3s;
+}
+
+.tab-btn{
+    width: 25vw;
+    background-color: darkslateblue;
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+    padding: 12px;
+    border-radius: 8px;
+    border: 0px;
+    margin: 0px;
+    margin-bottom: 16px;
+    /* Suavizar transicion */
+    transition: background-color 0.3s;
+}
+
+.small-btn{
+    width: 15vw;
+    background-color: darkslateblue;
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+    padding: 12px;
+    border-radius: 8px;
+    border: 0px;
+    margin: 0px;
+    /* margin-bottom: 16px; */
+    /* Suavizar transicion */
+    transition: background-color 0.3s;
+}
+
+.btn:hover, .tab-btn:hover, .small-btn:hover{
+    background-color: rgb(31, 18, 118);
+    box-shadow: 0 4px 8px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-link{
+    margin: 0px;
+    text-align: end;
+}
