@@ -3,51 +3,43 @@ import 'react-responsive-modal/styles.css';
 
 import { useState, useEffect } from "react"
 import { Modal } from 'react-responsive-modal';
+import { API_URL } from '../../../constants';
+import { CustomTable } from '../components/CustomTable';
 
 export const Food = () => {
 
-    const [food, setFood] = useState([]);
-    const [filteredFood, setFilteredFood] = useState([]);
-    const [supermarkets, setSupermarkets] = useState([]);
+    const [listOfSupermarkets, setListOfSupermarkets] = useState([]);
     const [selectedSuperMarket, setSelectedSuperMarket] = useState('');
 
     const [selectedFood, setSelectedFood] = useState({});
+    const isSelectedFoodSelected = () => Object.keys(selectedFood).length !== 0;
 
     const [open, setOpen] = useState(false);
+    const [data, setData] = useState([]);
 
     const getFood = async () => {
-        const resp = await fetch('http://localhost:3900/food');
+        const resp = await fetch(`${API_URL}/food`);
         if (resp.ok) {
             const json = await resp.json();
-            if (json.food?.length >= 0) {
-                setFood(json.food)
-                setFilteredFood(json.food)
-            }
+            console.log(json)
+            json.food.map((food) => {
+                console.log(food)
+                setData((oldData) => [...oldData, [food._id, food.title, food.carbs, food.fats, food.proteins, food.calories, food.supermarket]])
+            })
         } else {
-            setFood([])
-            setFilteredFood([])
+            setData([])
         }
     }
 
     const getSupermarkets = async () => {
-        const resp = await fetch('http://localhost:3900/food/supermarkets');
+        const resp = await fetch(`${API_URL}/food/supermarkets`);
         if (resp.ok) {
             const json = await resp.json();
-            if (json.supermarkets?.length > 0) setSupermarkets(json.supermarkets)
-            if (selectedSuperMarket === '') setSelectedSuperMarket(json.supermarkets[0])
+            setListOfSupermarkets(json.supermarkets)
+            if (selectedSuperMarket === '' && json.supermarkets?.length > 0) setSelectedSuperMarket(json.supermarkets[0])
         } else {
-            setSupermarkets([])
+            setListOfSupermarkets([])
         }
-    }
-
-    const filterFood = (value) => {
-        if (value === "") {
-            setFilteredFood(food)
-            return
-        }
-
-        const filtered = food.filter(item => item.title.toLowerCase().includes(value.toLowerCase()));
-        setFilteredFood(filtered);
     }
 
     const updateOrCreateFood = async (event) => {
@@ -66,10 +58,10 @@ export const Food = () => {
             supermarket: selectedSuperMarket,
         })
 
-        const resp = await fetch(`http://localhost:3900/food/${isSelectedFoodSelected() ? `update/${selectedFood._id}` : 'create'}`, {
+        const resp = await fetch(`${API_URL}/food/${isSelectedFoodSelected() ? `update/${selectedFood._id}` : 'create'}`, {
             method: isSelectedFoodSelected() ? 'PUT' : 'POST',
-            body: data,
             headers: { "Content-type": "application/json; charset=UTF-8" },
+            body: data,
         });
         if (!resp.ok) {
             alert('error')
@@ -81,10 +73,9 @@ export const Food = () => {
 
     const deleteFood = async (id) => {
         if (id === null || id === "") return;
-        const resp = await fetch(`http://localhost:3900/food/${id}/delete/`, { method: 'DELETE' });
+        const resp = await fetch(`${API_URL}/food/${id}/delete/`, { method: 'DELETE' });
         if (resp.ok) {
-            setFood(food.filter(item => item._id !== id));
-            setFilteredFood(food.filter(item => item._id !== id));
+            setData(data.filter(item => item[0] !== id));
         }
     }
 
@@ -96,20 +87,18 @@ export const Food = () => {
         setOpen(true);
     }
     const onCloseModal = () => {
-
         setSelectedFood({});
         setOpen(false);
-    }
-
-    const isSelectedFoodSelected = () => {
-        console.log(selectedFood);
-        return false;
     }
 
     useEffect(() => {
         getFood()
         getSupermarkets()
     }, [])
+
+    const newBtn = () => <input type="button" value="NEW" onClick={() => onOpenModal(null)} />
+    const editBtn = () => <input type="button" value="Edit" onClick={() => onOpenModal(item)} />
+    const deleteBtn = () => <input type="button" value="Delete" onClick={() => deleteFood(item._id)} />
 
 
     return (
@@ -143,7 +132,7 @@ export const Food = () => {
                         <label htmlFor="supermarket">Supermarket:</label>
                         <select onChange={(e) => setSelectedSuperMarket(e.target.value)}>
                             {
-                                supermarkets.map((item, index) => (
+                                listOfSupermarkets.map((item, index) => (
                                     <option key={index} value={item}>{item}</option>
                                 ))
                             }
@@ -158,20 +147,11 @@ export const Food = () => {
                 </div>
             </Modal>
 
-            <input type="button" value="NEW" onClick={() => onOpenModal(null)} />
-
-            <input type="text" placeholder="Busca por nombre..." onChange={(e) => filterFood(e.target.value)} />
-            {
-                filteredFood.length > 0 ? filteredFood.map((item, index) => (
-                    <div key={index}>
-                        <p>{item.title} | {item.carbs} | {item.fats} | {item.proteins} | {item.calories} | {item.supermarket}</p>
-                        <div>
-                            <input type="button" value="Edit" onClick={() => onOpenModal(item)} />
-                            <input type="button" value="Delete" onClick={() => deleteFood(item._id)} />
-                        </div>
-                    </div>
-                )) : <p>No hay resultados</p>
-            }
+            {data !== null
+                ? data.length > 0
+                    ? <CustomTable headers={['Title', 'Carbs', 'Fats', 'Proteins', 'Calories', 'Supermarket']} data={data} newBtn={newBtn} editBtn={editBtn} deleteBtn={deleteBtn} />
+                    : <p>No hay resultados</p>
+                : <p>Loading</p>}
         </div>
     )
 }
