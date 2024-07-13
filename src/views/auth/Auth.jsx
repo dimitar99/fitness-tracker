@@ -4,6 +4,8 @@ import { useState } from 'react'
 
 import { authUtil } from '../../utils/auth'
 
+import {userStore} from '../../store/authStore'
+
 export const Auth = () => {
 
     const [isLogin, setIsLogin] = useState(true);
@@ -41,7 +43,8 @@ export const Auth = () => {
             console.log(response)
             if (response && 'status' in response && response.status === "success") {
                 // Resetear valores del formulario
-                resetForm(event);
+                // resetForm(event);
+                userStore.getState().saveUser(response.user)
             } else {
                 alert("error")
             }

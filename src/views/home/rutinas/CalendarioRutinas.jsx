@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react'
+import { Modal } from 'react-responsive-modal';
 import { Calendar, dayjsLocalizer } from 'react-big-calendar'
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import dayjs from 'dayjs'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import { API_URL } from '../../../constants';
 
 const localizer = dayjsLocalizer(dayjs);
 
 export const CalendarioRutinas = () => {
+    const [open, setOpen] = useState(false);
+
     const [events, setEvents] = useState([]);
+    const [exercises, setExercises] = useState([]);
+
+    const emptySerie = { weight: 0, reps: 0, rpe: 0 }
+    const emptyExercise = { title: '', description: '', series: [emptySerie] }
 
     const loadListOfRoutines = async (inicio, fin) => {
         const resp = await fetch(`${API_URL}/routines/by-date?inicio=${inicio}&fin=${!fin ? inicio : fin}`, {
@@ -16,11 +24,30 @@ export const CalendarioRutinas = () => {
         });
         if (resp.ok) {
             const json = await resp.json();
-            json.routines.map((item) => setEvents([...events, { title: item.title, start: new Date(2024, 5, 10, 10, 0), end: new Date(2024, 5, 10, 12, 0) }]))
+            const newEvents = json.routines.map(item => ({
+                title: item.title,
+                start: new Date(2024, 5, 10, 10, 0),
+                end: new Date(2024, 5, 10, 12, 0)
+            }));
+            setEvents([...events, ...newEvents]);
             console.log(json)
         } else {
             setEvents([])
         }
+    }
+
+    const addEmptyExercise = () => setExercises(prevExercises => [...prevExercises, emptyExercise]);
+    const addEmptySerieToExercise = (exercise) => {
+        exercise.series = [...exercise.series, emptySerie]
+        setExercises(previousExercises => [...previousExercises, exercises])
+    }
+
+    const addRoutine = async () => {
+        alert('hola')
+    }
+
+    const onCloseModal = () => {
+        setOpen(false)
     }
 
     useEffect(() => {
@@ -36,10 +63,75 @@ export const CalendarioRutinas = () => {
 
     return (
         <>
-            <p>Rutina</p>
+            <input className='tab-btn' type='button' value="Crear Rutina" onClick={() => { setOpen(true) }} />
+
+            <Modal
+                open={open}
+                onClose={() => onCloseModal()}
+            >
+                <div className='flex-col'>
+                    <form onSubmit={addRoutine}>
+                        <label htmlFor="title">Title:</label>
+                        <input className='input' type="text" name="title" id="title" />
+
+                        <label htmlFor="title">Description:</label>
+                        <input className='input' type="text" name="description" id="description" />
+
+                        <label htmlFor="title">Date:</label>
+                        <DatePicker label="Basic date picker" />
+
+                        <label htmlFor="title">Exercises:</label>
+                        {exercises && exercises.length > 0
+                            && exercises.map((exercise) => (
+                                <>
+                                    <div>
+                                        <label htmlFor="title">Title:</label>
+                                        <div style={{ width: 8 }}></div>
+                                        <input className='input' type="text" name="title" id="title" onChange={(e) => exercise.title = e.target.value} />
+                                    </div>
+                                    <div style={{ height: 8 }}></div>
+                                    <div>
+                                        <label htmlFor="title">Description:</label>
+                                        <div style={{ width: 8 }}></div>
+                                        <input className='input' type="text" name="description" id="description" onChange={(e) => exercise.description = e.target.value} />
+                                    </div>
+                                    {exercise.series.map((serie) => (
+                                        <>
+                                            <div className='row'>
+                                                <div>
+                                                    <label htmlFor="title">Weight:</label>
+                                                    <div style={{ width: 8 }}></div>
+                                                    <input className='input' type="number" name="weight" id="weight" onChange={(e) => serie.weight = e.target.value} />
+                                                </div>
+                                                <div>
+                                                    <label htmlFor="title">Reps:</label>
+                                                    <div style={{ width: 8 }}></div>
+                                                    <input className='input' type="number" name="reps" id="reps" onChange={(e) => serie.weight = e.target.value} />
+                                                </div>
+                                                <div>
+                                                    <label htmlFor="title">Rpe:</label>
+                                                    <div style={{ width: 8 }}></div>
+                                                    <input className='input' type="number" name="roe" id="rpe" onChange={(e) => serie.weight = e.target.value} />
+                                                </div>
+                                            </div>
+                                            <input type='button' value='Add Serie' onClick={() => addEmptySerieToExercise()} />
+                                        </>
+                                    ))}
+                                    <div style={{ height: 24 }} />
+                                </>
+                            )
+                            )}
+                        <input type='button' value='Add Exercise' onClick={() => addEmptyExercise()} />
+                        <div style={{ height: 24 }}></div>
+                        <input type="submit" value="Crear" />
+                    </form>
+                </div>
+            </Modal>
+
             <div>
+
                 <Calendar
-                    // views={['month']}
+                    views={['month']}
                     localizer={localizer}
                     events={events}
                     startAccessor="start"

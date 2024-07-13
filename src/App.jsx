@@ -1,14 +1,9 @@
-import { Home } from './views/home/Home'
-import { Auth } from './views/auth/Auth'
+import { AppRouter } from "./router/AppRouter"
 import './Buttons.css'
 import './Flex.css'
-
 function App() {
   return (
-    <>
-      {/* <Auth /> */}
-      <Home />
-    </>
+    <AppRouter />
   )
 }
 

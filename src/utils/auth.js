@@ -1,7 +1,9 @@
+import { LOGIN_ENDPOINT, REGISTER_ENDPOINT } from "../constants";
+
 export const authUtil = () => {
   const login = async (email, password) => {
     try {
-      const resp = await fetch("http://localhost:3900/user/login", {
+      const resp = await fetch(LOGIN_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,9 +23,8 @@ export const authUtil = () => {
   };
 
   const register = async (name, nick, email, password) => {
-    console.log('register')
     try {
-      const resp = await fetch("http://localhost:3900/user/register", {
+      const resp = await fetch(REGISTER_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
